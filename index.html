@@ -72,6 +72,9 @@
 	}
 
 	.ai-chat-content table {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
 		width: 100%;
 		border-collapse: collapse;
 	}
@@ -133,28 +136,44 @@
         const IMAGE_COMMAND = '/gambar ';
 
         // --- Komponen Anak (Child Components) ---
+        const AiIcon = () => (
+            <svg className="w-full h-full" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <path d="M37.728,49.312v186.48C37.728,413.104,256,512,256,512s218.272-98.896,218.272-276.208V49.312 C474.272,49.312,396.128,0,256,0S37.728,49.312,37.728,49.312z"></path>
+                <path style={{fill: '#666666'}} d="M256,0C115.872,0,37.728,49.312,37.728,49.312v186.48C37.728,413.104,256,512,256,512V0z"></path>
+                <g>
+                    <path style={{fill: '#FFFFFF'}} d="M364.6,286.992c0,0-29.104,74.104-108.6,74.104s-108.6-74.104-108.6-74.104 S256,361.096,364.6,286.992z"></path>
+                    <path style={{fill: '#FFFFFF'}} d="M224.8,153.424c-16.072-37.664-59.632-55.168-97.296-39.096 c-17.584,7.504-31.592,21.512-39.096,39.096H224.8z"></path>
+                    <path style={{fill: '#FFFFFF'}} d="M423.592,153.424c-16.072-37.664-59.632-55.168-97.296-39.096 c-17.584,7.504-31.592,21.512-39.096,39.096H423.592z"></path>
+                </g>
+            </svg>
+        );
+
         const AiMessageContent = React.memo(({ part, isMarkedLoaded }) => {
             if (part.type.startsWith('image/')) {
                 return <img src={part.content} alt="Generated Content" className="mt-2 rounded-lg max-w-full h-auto" />;
             }
             if (part.type === 'text') {
                 const htmlContent = isMarkedLoaded && window.marked ? window.marked.parse(part.content) : part.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                return <div className="ai-chat-content text-sm sm:text-base break-words" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+                return <div className="ai-chat-content text-base break-words" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
             }
             return null;
         });
 
         const MessageBubble = React.memo(({ msg, isMarkedLoaded }) => {
             const isUser = msg.role === 'user';
-            const bubbleClasses = isUser ? 'bg-blue-100 text-blue-900 rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none';
-            const ModelAvatar = () => (<div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">AI</div>);
+            const bubbleClasses = isUser ? 'bg-gray-100 text-blue-700 rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none';
+            const ModelAvatar = () => (
+                <div className="w-7 h-7 flex-shrink-0">
+                    <AiIcon />
+                </div>
+            );
             
             return (
                 <div className={`flex items-start gap-2 sm:gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
                     {!isUser && <ModelAvatar />}
-                    <div className={`${isUser ? 'max-w-[60%]' : 'max-w-full'} rounded-2xl p-3 sm:p-4 shadow-sm ${bubbleClasses}`}>
+                    <div className={`${isUser ? 'max-w-[70%]' : 'max-w-full'} min-w-0 rounded-2xl p-3 sm:p-4 shadow-sm ${bubbleClasses}`}>
                         {isUser ? (
-                             <p className="text-sm sm:text-base whitespace-pre-wrap break-words">{msg.parts[0].content}</p>
+                             <p className="text-base whitespace-pre-wrap break-words">{msg.parts[0].content}</p>
                         ) : (
                             msg.parts.map((part, index) => <AiMessageContent key={index} part={part} isMarkedLoaded={isMarkedLoaded} />)
                         )}
@@ -166,13 +185,12 @@
         const ChatInputForm = React.memo(({ value, onChange, onSubmit, isLoading, hasApiKey }) => {
             return (
                 <form onSubmit={onSubmit} className="max-w-3xl mx-auto px-4 sm:px-6">
-                    {/* The container has the border, background, and rounded shape */}
-                    <div className="flex items-center w-full h-14 bg-white border border-gray-300 rounded-full shadow-sm focus-within:ring-2 focus-within:ring-indigo-400 transition-all duration-200">
+                    <div className="flex items-center w-full h-14 bg-gray-200 rounded-full shadow-sm transition-all duration-200">
                         
                         {/* Upload Button */}
                         <button
                             type="button"
-                            className="m-1 w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center focus:outline-none flex-shrink-0 transition-colors"
+                            className="w-14 h-14 text-gray-600 flex items-center justify-center focus:outline-none flex-shrink-0 transition-colors"
                             aria-label="Tambah file"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -183,8 +201,8 @@
                             type="text" 
                             value={value} 
                             onChange={onChange} 
-                            placeholder={hasApiKey ? "Ketik pesan atau '/gambar'..." : "Masukkan API Key Anda..."} 
-                            className="w-full h-full bg-transparent border-none focus:outline-none focus:ring-0 text-sm sm:text-base placeholder-gray-500 px-2" 
+                            placeholder={hasApiKey ? "Ketik pesan..." : "Masukkan API Key Anda..."} 
+                            className="w-full h-full bg-transparent border-none focus:outline-none focus:ring-0 text-base placeholder-gray-500 pr-2" 
                             disabled={isLoading} 
                         />
                         
@@ -192,13 +210,13 @@
                         <button 
                             type="submit" 
                             disabled={isLoading || !value} 
-                            className="m-1 w-12 h-12 bg-indigo-500 text-white rounded-full flex items-center justify-center transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0" 
+                            className="m-1.5 w-11 h-11 bg-indigo-500 text-white rounded-full flex items-center justify-center transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0" 
                             aria-label="Kirim pesan"
                         >
                             {isLoading ? (
-                                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" aria-label="Memuat"></div>
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-label="Memuat"></div>
                             ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                             )}
                         </button>
                     </div>
