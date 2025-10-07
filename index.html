@@ -14,6 +14,7 @@
 	<!-- Memuat Pustaka Eksternal dari CDN -->
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 	<!-- Memuat React, ReactDOM, dan Babel untuk JSX di Browser -->
 	<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -77,35 +78,60 @@
 
 	<script type="text/babel">
 		// --- Konstanta dan Konfigurasi ---
-        const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/';
-        const MODELS = {
-            CHAT: 'gemini-2.5-flash-preview-05-20',
-            IMAGE: 'gemini-2.5-flash-image-preview'
-        };
-        const IMAGE_COMMAND = '/gambar ';
+        const supabaseUrl = 'https://etfnreqjstmuqeswjzyp.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0Zm5yZXFqc3RtdXFlc3dqenlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4Mzk5MzUsImV4cCI6MjA3NTQxNTkzNX0.7flP59HEJ9TWy5uea3yVfU9fDnzeUOHEo6iRK2TQGIQ';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- Fungsi Bantuan ---
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
 
         // --- Ikon SVG ---
-        const AiIcon = () => (
-            <svg className="w-full h-full" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                <path d="M37.728,49.312v186.48C37.728,413.104,256,512,256,512s218.272-98.896,218.272-276.208V49.312 C474.272,49.312,396.128,0,256,0S37.728,49.312,37.728,49.312z"></path>
-                <path style={{fill: '#666666'}} d="M256,0C115.872,0,37.728,49.312,37.728,49.312v186.48C37.728,413.104,256,512,256,512V0z"></path>
-                <g>
-                    <path style={{fill: '#FFFFFF'}} d="M364.6,286.992c0,0-29.104,74.104-108.6,74.104s-108.6-74.104-108.6-74.104 S256,361.096,364.6,286.992z"></path>
-                    <path style={{fill: '#FFFFFF'}} d="M224.8,153.424c-16.072-37.664-59.632-55.168-97.296-39.096 c-17.584,7.504-31.592,21.512-39.096,39.096H224.8z"></path>
-                    <path style={{fill: '#FFFFFF'}} d="M423.592,153.424c-16.072-37.664-59.632-55.168-97.296-39.096 c-17.584,7.504-31.592,21.512-39.096,39.096H423.592z"></path>
-                </g>
-            </svg>
-        );
+        const AiIcon = () => ( <svg className="w-full h-full" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M37.728,49.312v186.48C37.728,413.104,256,512,256,512s218.272-98.896,218.272-276.208V49.312 C474.272,49.312,396.128,0,256,0S37.728,49.312,37.728,49.312z"></path><path style={{fill: '#666666'}} d="M256,0C115.872,0,37.728,49.312,37.728,49.312v186.48C37.728,413.104,256,512,256,512V0z"></path><g><path style={{fill: '#FFFFFF'}} d="M364.6,286.992c0,0-29.104,74.104-108.6,74.104s-108.6-74.104-108.6-74.104 S256,361.096,364.6,286.992z"></path><path style={{fill: '#FFFFFF'}} d="M224.8,153.424c-16.072-37.664-59.632-55.168-97.296-39.096 c-17.584,7.504-31.592,21.512-39.096,39.096H224.8z"></path><path style={{fill: '#FFFFFF'}} d="M423.592,153.424c-16.072-37.664-59.632-55.168-97.296-39.096 c-17.584,7.504-31.592,21.512-39.096,39.096H423.592z"></path></g></svg> );
         const HistoryIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg> );
         const NewChatIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /><path d="M8 12h8" /><path d="M12 8v8" /></svg> );
         const EditIcon = (props) => ( <svg {...props} fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M10.681 18.207l-2.209 5.67 5.572-2.307-3.363-3.363zM26.855 6.097l-0.707-0.707c-0.78-0.781-2.047-0.781-2.828 0l-1.414 1.414 3.535 3.536 1.414-1.414c0.782-0.781 0.782-2.048 0-2.829zM10.793 17.918l0.506-0.506 3.535 3.535 9.9-9.9-3.535-3.535 0.707-0.708-11.113 11.114zM23.004 26.004l-17.026 0.006 0.003-17.026 11.921-0.004 1.868-1.98h-14.805c-0.552 0-1 0.447-1 1v19c0 0.553 0.448 1 1 1h19c0.553 0 1-0.447 1-1v-14.058l-2.015 1.977 0.054 11.085z"></path></svg> );
         const SaveIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> );
         const DeleteIcon = (props) => ( <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> );
+        const PdfIcon = () => (
+            <svg viewBox="0 0 24 24" className="w-full h-full">
+                <path fill="#EF4444" d="M20 8v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2h8l6 6z"/>
+                <path fill="#DC2626" d="M14 2v6h6L14 2z"/>
+                <text x="50%" y="60%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="7" fontWeight="bold">PDF</text>
+            </svg>
+        );
+        const CloseIcon = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>);
+        const LockIcon = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>);
+        const LogoutIcon = (props) => ( <svg {...props} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M2 6.5C2 4.01472 4.01472 2 6.5 2H12C14.2091 2 16 3.79086 16 6V7C16 7.55228 15.5523 8 15 8C14.4477 8 14 7.55228 14 7V6C14 4.89543 13.1046 4 12 4H6.5C5.11929 4 4 5.11929 4 6.5V17.5C4 18.8807 5.11929 20 6.5 20H12C13.1046 20 14 19.1046 14 18V17C14 16.4477 14.4477 16 15 16C15.5523 16 16 16.4477 16 17V18C16 20.2091 14.2091 22 12 22H6.5C4.01472 22 2 19.9853 2 17.5V6.5ZM18.2929 8.29289C18.6834 7.90237 19.3166 7.90237 19.7071 8.29289L22.7071 11.2929C23.0976 11.6834 23.0976 12.3166 22.7071 12.7071L19.7071 15.7071C19.3166 16.0976 18.6834 16.0976 18.2929 15.7071C17.9024 15.3166 17.9024 14.6834 18.2929 14.2929L19.5858 13L11 13C10.4477 13 10 12.5523 10 12C10 11.4477 10.4477 11 11 11L19.5858 11L18.2929 9.70711C17.9024 9.31658 17.9024 8.68342 18.2929 8.29289Z"></path></svg> );
 
         // --- Komponen Anak (Child Components) ---
+        const StorageImage = ({ path }) => {
+            const [imageUrl, setImageUrl] = React.useState(null);
+
+            React.useEffect(() => {
+                const getUrl = async () => {
+                    const { data, error } = await supabase.storage.from('uploads').createSignedUrl(path, 3600);
+                    if (error) console.error('Error getting signed URL:', error);
+                    else setImageUrl(data.signedUrl);
+                };
+                if (path) getUrl();
+            }, [path]);
+
+            if (!imageUrl) return <div className="animate-pulse bg-gray-200 h-24 w-full rounded-lg"></div>;
+            return <img src={imageUrl} alt="Generated Content" className="mt-2 rounded-lg max-w-full h-auto" />;
+        };
+
         const AiMessageContent = React.memo(({ part, isMarkedLoaded }) => {
-            if (part.type.startsWith('image/')) { return <img src={part.content} alt="Generated Content" className="mt-2 rounded-lg max-w-full h-auto" />; }
-            if (part.type === 'text') {
+            if (part.storage_path) return <StorageImage path={part.storage_path} />;
+            if (part.content && part.content.startsWith('data:image/')) {
+                 return <img src={part.content} alt="Generated Content" className="mt-2 rounded-lg max-w-full h-auto" />;
+            }
+            if (part.content) {
                 const htmlContent = isMarkedLoaded && window.marked ? window.marked.parse(part.content) : part.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 return <div className="ai-chat-content text-base break-words" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
             }
@@ -114,25 +140,61 @@
 
         const MessageBubble = React.memo(({ msg, isMarkedLoaded }) => {
             const isUser = msg.role === 'user';
+            const textPart = msg.parts.find(p => p.content);
             const bubbleClasses = isUser ? 'bg-gray-100 text-blue-700 rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none';
             const ModelAvatar = () => ( <div className="w-6 h-6 flex-shrink-0"><AiIcon /></div> );
+            
+            if (isUser && !textPart) return null;
+
             return (
                 <div className={`flex items-start gap-2 sm:gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
                     {!isUser && <ModelAvatar />}
                     <div className={`${isUser ? 'max-w-[70%]' : 'max-w-full'} min-w-0 rounded-2xl p-3 sm:p-4 shadow-sm ${bubbleClasses}`}>
-                        {msg.parts.map((part, index) => isUser ? <p key={index} className="text-base whitespace-pre-wrap break-words">{part.content}</p> : <AiMessageContent key={index} part={part} isMarkedLoaded={isMarkedLoaded} />)}
+                        {isUser ? (
+                            <p className="text-base whitespace-pre-wrap break-words">{textPart.content}</p>
+                        ) : (
+                             msg.parts.map((part, index) => <AiMessageContent key={index} part={part} isMarkedLoaded={isMarkedLoaded} />)
+                        )}
+                    </div>
+                </div>
+            );
+        });
+        
+        const FilePreview = React.memo(({files, onRemoveFile}) => {
+            if (files.length === 0) return null;
+            return (
+                <div className="max-w-3xl mx-auto mb-2 px-4 sm:px-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        {files.map(file => (
+                             <div key={file.id} className="relative group bg-white border border-gray-200 rounded-lg shadow-sm p-2 flex items-center gap-3 min-w-0">
+                                <div className="h-10 w-10 flex-shrink-0 rounded flex items-center justify-center overflow-hidden">
+                                    {file.type.startsWith('image/') ? (
+                                        <img src={file.base64Data} alt={file.name} className="w-full h-full object-cover"/>
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center"><PdfIcon /></div>
+                                    )}
+                                </div>
+                                <div className="flex-grow min-w-0">
+                                    <p className="text-sm font-medium text-gray-800 truncate">{file.name}</p>
+                                    <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                                </div>
+                                <button onClick={() => onRemoveFile(file.id)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Hapus file">
+                                    <CloseIcon className="w-3 h-3" />
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 </div>
             );
         });
 
-        const ChatInputForm = React.memo(({ value, onChange, onSubmit, isLoading, hasApiKey }) => {
-            const isSendDisabled = isLoading || !value;
+        const ChatInputForm = React.memo(({ value, onChange, onSubmit, isLoading, hasApiKey, onFileButtonClick, hasFiles }) => {
+            const isSendDisabled = isLoading || (!value && !hasFiles);
             return (
                 <form onSubmit={onSubmit} className="max-w-3xl mx-auto px-4 sm:px-6">
                     <div className="flex items-center w-full h-14 bg-gray-100 rounded-full shadow-sm transition-all duration-200">
-                        <button type="button" className="w-14 h-14 text-gray-600 flex items-center justify-center focus:outline-none flex-shrink-0 transition-colors" aria-label="Tambah file">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <button type="button" onClick={onFileButtonClick} className="w-14 h-14 text-gray-600 flex items-center justify-center focus:outline-none flex-shrink-0 transition-colors" aria-label="Tambah file">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
                         <input type="text" value={value} onChange={onChange} placeholder={hasApiKey ? "Ketik pesan..." : "Masukkan API Key Anda..."} className="w-full h-full bg-transparent border-none focus:outline-none focus:ring-0 text-base placeholder-gray-500 pr-2" disabled={isLoading} />
                         <button type="submit" disabled={isSendDisabled} className="w-14 h-14 flex items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed flex-shrink-0" aria-label="Kirim pesan">
@@ -179,7 +241,7 @@
                 onClose();
             };
 
-            const displayableConversations = conversations.filter(c => c.messages.length > 0).reverse();
+            const displayableConversations = conversations.filter(c => c.title).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 
             return (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center" onClick={handleModalClose}>
@@ -187,7 +249,7 @@
                         <h2 className="text-base font-semibold text-center pt-4">Riwayat Percakapan</h2>
                         <div className="border-b mx-4 mt-3"></div>
                         <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
-                            {displayableConversations.length > 0 && displayableConversations.map(convo => (
+                           {displayableConversations.map(convo => (
                                 <div key={convo.id} className={`flex items-stretch gap-2 h-12 history-item ${editingId === convo.id ? 'is-editing' : ''} ${confirmDeleteId === convo.id ? 'confirming-delete' : ''}`}>
                                     <div className="flex-grow min-w-0 border rounded-md flex items-center px-4 cursor-pointer" onClick={() => editingId !== convo.id && onLoad(convo.id)}>
                                         <span className="history-item-title block truncate w-full">{convo.title}</span>
@@ -206,10 +268,71 @@
             );
         });
 
+        const LoginScreen = () => {
+            const [email, setEmail] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [error, setError] = React.useState(null);
+            const [loading, setLoading] = React.useState(false);
+
+            const handleLoginSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError(null);
+                const { error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    setError('Email atau password salah. Silakan coba lagi.');
+                }
+                setLoading(false);
+            };
+
+            return (
+                <div className="h-full w-full bg-gray-50 flex items-center justify-center p-4">
+                    <div className="w-full max-w-sm bg-white p-8 rounded-2xl shadow-md border border-gray-200 text-center">
+                        <div className="inline-block p-3 bg-gray-100 rounded-full mb-4">
+                            <LockIcon className="w-8 h-8 text-gray-500" />
+                        </div>
+                        <form onSubmit={handleLoginSubmit} className="space-y-4">
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full h-14 px-4 bg-gray-100 rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base"
+                                required
+                                disabled={loading}
+                            />
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full h-14 px-4 bg-gray-100 rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base"
+                                required
+                                disabled={loading}
+                            />
+                            {error && <p className="text-red-500 text-sm text-left px-2">{error}</p>}
+                            <button
+                                type="submit"
+                                className="w-full h-14 bg-indigo-500 text-white font-semibold rounded-xl hover:bg-indigo-600 transition-colors disabled:bg-indigo-300"
+                                disabled={loading}
+                            >
+                                {loading ? 'Loading...' : 'Login'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
         // --- Komponen Utama Aplikasi ---
         function App() {
             // STATE
-            const [apiKey, setApiKey] = React.useState('');
+            const [session, setSession] = React.useState(null);
+            const [loadingSession, setLoadingSession] = React.useState(true);
             const [conversations, setConversations] = React.useState([]);
             const [currentConversationId, setCurrentConversationId] = React.useState(null);
             const [messages, setMessages] = React.useState([]);
@@ -218,181 +341,268 @@
             const [error, setError] = React.useState(null);
             const [isMarkedLoaded, setIsMarkedLoaded] = React.useState(false);
             const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
+            const [uploadedFiles, setUploadedFiles] = React.useState([]);
             
             const chatContainerRef = React.useRef(null);
+            const fileInputRef = React.useRef(null);
             
             // COMPUTED
-            const currentConversation = conversations.find(c => c.id === currentConversationId);
-            const currentTitle = currentConversation ? currentConversation.title : '';
-            const hasActualHistory = conversations.some(c => c.messages.length > 0);
+            const hasActualHistory = conversations.some(c => c.title);
 
             // --- EFFECTS ---
-            React.useEffect(() => {
-                const savedConversations = localStorage.getItem('ai-conversations');
-                if (savedConversations) {
-                    const parsed = JSON.parse(savedConversations);
-                    if (parsed.length > 0) {
-                        setConversations(parsed);
-                        setCurrentConversationId(parsed[0].id);
-                    } else {
-                        handleNewChat();
-                    }
-                } else {
-                     handleNewChat();
-                }
+             React.useEffect(() => {
+                supabase.auth.getSession().then(({ data: { session } }) => {
+                    setSession(session);
+                    setLoadingSession(false);
+                });
+
+                const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+                    setSession(session);
+                });
+
+                return () => subscription.unsubscribe();
             }, []);
-
+            
             React.useEffect(() => {
-                localStorage.setItem('ai-conversations', JSON.stringify(conversations));
-            }, [conversations]);
-
+                const fetchConversations = async () => {
+                    if (!session) return;
+                    const { data, error } = await supabase.from('conversations').select('*').order('created_at', { ascending: false });
+                    if (error) {
+                        console.error('Error fetching conversations:', error);
+                    } else {
+                        if (data && data.length > 0) {
+                            setConversations(data);
+                            setCurrentConversationId(data[0].id);
+                        } else {
+                            handleNewChat(session.user.id);
+                        }
+                    }
+                };
+                fetchConversations();
+            }, [session]);
+            
             React.useEffect(() => {
-                const convo = conversations.find(c => c.id === currentConversationId);
-                setMessages(convo ? convo.messages : []);
-            }, [currentConversationId, conversations]);
+                const fetchMessages = async () => {
+                    if (currentConversationId) {
+                        const { data, error } = await supabase.from('messages').select('*').eq('conversation_id', currentConversationId).order('created_at');
+                        if (error) console.error('Error fetching messages:', error);
+                        else setMessages(data || []);
+                    } else {
+                        setMessages([]);
+                    }
+                };
+                fetchMessages();
+            }, [currentConversationId]);
 
-            React.useEffect(() => { chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' }); }, [messages]);
+            React.useEffect(() => { chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' }); }, [messages, uploadedFiles]);
             React.useEffect(() => { if (window.marked) setIsMarkedLoaded(true); }, []);
 
             // --- HANDLERS ---
-            const handleApiKeySubmit = (key) => {
-                if (key.startsWith('AIzaSy') && key.length > 35) {
-                    setApiKey(key);
-                    setError(null);
-                } else {
-                    setError('API Key tidak valid. Mohon periksa kembali.');
+            const handleLogout = async () => {
+                await supabase.auth.signOut();
+            };
+
+            const handleNewChat = async (userId) => {
+                const { data, error } = await supabase.from('conversations').insert({ title: '', user_id: userId || session.user.id }).select();
+                if (error) console.error('Error creating new chat:', error);
+                else if(data){
+                    setConversations(prev => [data[0], ...prev]);
+                    setCurrentConversationId(data[0].id);
+                    setIsHistoryOpen(false);
                 }
             };
 
-            const updateConversation = (id, updates) => {
-                setConversations(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
-            };
-
-            const handleNewChat = () => {
-                const newId = Date.now();
-                const newConvo = { id: newId, title: '', messages: [] };
-                setConversations(prev => [newConvo, ...prev]);
-                setCurrentConversationId(newId);
-                setIsHistoryOpen(false);
-            };
-
-            const handleLoadConversation = (id) => {
-                setCurrentConversationId(id);
-                setIsHistoryOpen(false);
-            };
-
-            const handleUpdateTitle = (id, newTitle) => {
-                if(newTitle.trim()) {
-                    updateConversation(id, { title: newTitle.trim() });
-                }
-            };
-
-            const handleDeleteConversation = (id) => {
-                setConversations(prev => {
-                    const newConvos = prev.filter(c => c.id !== id);
-                    if (currentConversationId === id) {
-                        if (newConvos.length > 0) {
-                            setCurrentConversationId(newConvos[0].id);
-                        } else {
-                           // Handled by the effect below
-                        }
+            const handleLoadConversation = (id) => { setCurrentConversationId(id); setIsHistoryOpen(false); };
+            const handleUpdateTitle = async (id, newTitle) => {
+                 if(newTitle.trim()) {
+                    const { error } = await supabase.from('conversations').update({ title: newTitle.trim() }).eq('id', id);
+                    if (error) console.error('Error updating title:', error);
+                    else {
+                        setConversations(prev => prev.map(c => c.id === id ? { ...c, title: newTitle.trim() } : c));
                     }
-                    return newConvos;
-                });
+                }
+            };
+            const handleDeleteConversation = async (id) => {
+                const { data: messagesToDelete, error: msgError } = await supabase.from('messages').select('parts').eq('conversation_id', id);
+                if (msgError) console.error("Error fetching messages for deletion:", msgError);
+                else {
+                    const filesToDelete = [];
+                    messagesToDelete.forEach(msg => {
+                        msg.parts.forEach(part => {
+                            if (part.storage_path) filesToDelete.push(part.storage_path);
+                        });
+                    });
+                    if (filesToDelete.length > 0) {
+                        const { error: storageError } = await supabase.storage.from('uploads').remove(filesToDelete);
+                        if (storageError) console.error("Error deleting files from storage:", storageError);
+                    }
+                }
+
+                 const { error } = await supabase.from('conversations').delete().eq('id', id);
+                 if(error) console.error("Error deleting conversation", error);
+                 else {
+                     const newConvos = conversations.filter(c => c.id !== id);
+                     setConversations(newConvos);
+                     if(currentConversationId === id){
+                        if(newConvos.length > 0) {
+                             setCurrentConversationId(newConvos[0].id);
+                        } else {
+                             handleNewChat();
+                        }
+                     }
+                 }
             };
             
-             React.useEffect(() => {
-                if (conversations.length === 0 && currentConversationId) {
-                    handleNewChat();
-                }
-            }, [conversations]);
+             const handleFileChange = (e) => {
+                const files = Array.from(e.target.files);
+                files.forEach(file => {
+                    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+                        setError(`File tidak didukung: ${file.name}`);
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setUploadedFiles(prev => [...prev, {
+                            id: crypto.randomUUID(), name: file.name, size: file.size,
+                            type: file.type, base64Data: reader.result, rawFile: file
+                        }]);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                e.target.value = null;
+            };
+
+            const handleRemoveFile = (fileId) => {
+                setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+            };
 
             const handleSendMessage = async (e) => {
                 e.preventDefault();
                 const trimmedInput = inputValue.trim();
-                if (!trimmedInput) return;
+                if (!trimmedInput && uploadedFiles.length === 0) return;
+                
+                setIsLoading(true);
+                setError(null);
 
-                if (!apiKey) { 
-                    handleApiKeySubmit(trimmedInput); 
-                    if(trimmedInput.startsWith('AIzaSy') && trimmedInput.length > 35) {
-                       setInputValue('');
-                    }
-                    return; 
+                const currentConvo = conversations.find(c=> c.id === currentConversationId);
+                if (!currentConvo) {
+                    setError("Tidak ada percakapan aktif.");
+                    setIsLoading(false);
+                    return;
                 }
                 
-                const userMessage = { role: 'user', parts: [{ type: 'text', content: trimmedInput }] };
-                const newMessages = [...messages, userMessage];
-                
-                const title = (messages.length === 0 && !currentTitle) ? trimmedInput.substring(0, 30) : currentTitle;
-                updateConversation(currentConversationId, { messages: newMessages, title });
+                const filePartsForDb = [];
+                for (const file of uploadedFiles) {
+                    const filePath = `${session.user.id}/${currentConversationId}/${Date.now()}_${file.name}`;
+                    const { error: uploadError } = await supabase.storage.from('uploads').upload(filePath, file.rawFile);
+                    if(uploadError) {
+                        console.error("Upload error", uploadError);
+                        setError("Gagal mengunggah file.");
+                        setIsLoading(false);
+                        return;
+                    }
+                    filePartsForDb.push({ type: file.type, storage_path: filePath, name: file.name });
+                }
 
-                setError(null);
-                setIsLoading(true);
-                setInputValue('');
+                const partsForDb = [...filePartsForDb];
+                let promptForApi = trimmedInput;
+                if (uploadedFiles.length > 0 && !promptForApi) {
+                    const firstFileType = uploadedFiles[0].type;
+                    if (firstFileType.startsWith('image/')) promptForApi = "deskripsi gambar ini";
+                    else if (firstFileType === 'application/pdf') promptForApi = "berikan penjelasan singkat tentang isi pdf ini";
+                }
+                if (promptForApi) partsForDb.push({ type: 'text', content: promptForApi });
+
+                if (partsForDb.length === 0) {
+                    setIsLoading(false);
+                    return;
+                }
+
+                const { data: newMsg, error: msgError } = await supabase.from('messages').insert({
+                    conversation_id: currentConversationId,
+                    user_id: session.user.id,
+                    role: 'user',
+                    parts: partsForDb,
+                }).select();
                 
+                if(msgError) {
+                    console.error("Message insert error", msgError);
+                    setError("Gagal mengirim pesan.");
+                    setIsLoading(false);
+                    return;
+                }
+
+                setMessages(prev => [...prev, newMsg[0]]);
+                if (!currentConvo.title) {
+                    const newTitle = (promptForApi || uploadedFiles[0].name).substring(0, 30);
+                    await handleUpdateTitle(currentConversationId, newTitle);
+                }
+                setInputValue('');
+                setUploadedFiles([]);
+
                 try {
-                    const modelParts = await fetchModelResponse(trimmedInput, apiKey);
-                    const modelMessage = { role: 'model', parts: modelParts };
-                    updateConversation(currentConversationId, { messages: [...newMessages, modelMessage] });
+                    const { data, error: functionError } = await supabase.functions.invoke('ai', {
+                        body: { prompt: promptForApi, files: uploadedFiles },
+                    });
+
+                    if (functionError) throw new Error(functionError.message);
+                    
+                    const { modelParts } = data;
+
+                    const { data: modelMsg, error: modelMsgError } = await supabase.from('messages').insert({
+                        conversation_id: currentConversationId,
+                        user_id: session.user.id,
+                        role: 'model',
+                        parts: modelParts
+                    }).select();
+
+                    if(modelMsgError) throw new Error("Gagal menyimpan respons AI.");
+
+                    setMessages(prev => [...prev, modelMsg[0]]);
+
                 } catch (err) {
-                    const errorMessage = `Maaf, terjadi kesalahan: ${err.message}`;
-                    setError(errorMessage);
-                    const errorMsg = { role: 'model', parts: [{ type: 'text', content: errorMessage }] };
-                    updateConversation(currentConversationId, { messages: [...newMessages, errorMsg] });
+                    setError(`Maaf, terjadi kesalahan: ${err.message}`);
                 } finally {
                     setIsLoading(false);
                 }
             };
-
-            // --- API LOGIC ---
-            async function fetchModelResponse(prompt, apiKey) {
-                const isImagePrompt = prompt.toLowerCase().startsWith(IMAGE_COMMAND);
-                const model = isImagePrompt ? MODELS.IMAGE : MODELS.CHAT;
-                const finalPrompt = isImagePrompt ? prompt.substring(IMAGE_COMMAND.length) : prompt;
-                const parts = [{ text: finalPrompt }];
-                const apiUrl = `${API_BASE_URL}${model}:generateContent?key=${apiKey}`;
-                const payload = { contents: [{ parts }] };
-                if (model === MODELS.IMAGE) { payload.generationConfig = { responseModalities: ['TEXT', 'IMAGE'] }; } 
-                else { payload.tools = [{ "google_search": {} }]; }
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error?.message || `Request gagal`); }
-                const result = await response.json();
-                if (!result.candidates?.length) { throw new Error("Respons API tidak valid."); }
-                const responseParts = result.candidates[0].content?.parts;
-                if (!responseParts) { throw new Error("Format konten tidak valid."); }
-                return responseParts.map(part => {
-                    if (part.text) return { type: 'text', content: part.text };
-                    if (part.inlineData) return { type: part.inlineData.mimeType, content: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` };
-                    return null;
-                }).filter(Boolean);
+            
+            if (loadingSession) {
+                return <div className="h-full w-full bg-gray-50 flex items-center justify-center"><p>Loading...</p></div>;
+            }
+            if (!session) {
+                return <LoginScreen />;
             }
             
+            const currentConvo = conversations.find(c => c.id === currentConversationId);
+
             return (
                 <div className="h-full w-full bg-gray-50 font-sans flex flex-col antialiased">
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple accept="image/*,application/pdf" className="hidden" />
                     {isHistoryOpen && <HistoryModal conversations={conversations} onLoad={handleLoadConversation} onUpdateTitle={handleUpdateTitle} onDelete={handleDeleteConversation} onClose={() => setIsHistoryOpen(false)} /> }
                     <header className="bg-white/70 backdrop-blur-lg border-b border-gray-200 p-4 shadow-sm z-10 flex-shrink-0">
                         <div className="max-w-3xl mx-auto flex items-center justify-between">
-                             <button onClick={() => setIsHistoryOpen(true)} disabled={!hasActualHistory} className={`text-gray-600 ${hasActualHistory ? 'hover:text-gray-900' : 'opacity-50 cursor-not-allowed'}`}><HistoryIcon/></button>
-                             <h1 className="text-base font-semibold text-gray-800 text-center truncate mx-4">{currentTitle}</h1>
-                             <button onClick={handleNewChat} className="text-gray-600 hover:text-gray-900"><NewChatIcon/></button>
+                             <button onClick={() => setIsHistoryOpen(true)} disabled={!hasActualHistory} className={`text-gray-600 ${hasActualHistory ? 'hover:text-gray-900' : 'opacity-50 cursor-not-allowed'}`}><HistoryIcon className="w-6 h-6"/></button>
+                             <h1 className="text-base font-semibold text-gray-800 text-center truncate mx-4">{currentConvo?.title || ''}</h1>
+                             <div className="flex items-center gap-4">
+                                <button onClick={()=> handleNewChat()} className="text-gray-600 hover:text-gray-900"><NewChatIcon className="w-6 h-6"/></button>
+                                <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900"><LogoutIcon className="w-6 h-6"/></button>
+                             </div>
                         </div>
                     </header>
                     <main ref={chatContainerRef} className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto p-4 sm:p-6">
                         {messages.length === 0 ? (
                             <div className="flex h-full items-center justify-center">
                                 <p className="text-gray-500 text-center">
-                                    { !apiKey ? "Masukkan API Key Anda untuk memulai." : "Projek ini masih dalam Pengambangan" }
+                                    Projek ini masih dalam Pengambangan
                                 </p>
                             </div>
-                        ) : (
-                             <div className="space-y-6">
-                                {messages.map((msg, index) => <MessageBubble key={index} msg={msg} isMarkedLoaded={isMarkedLoaded} />)}
-                            </div>
-                        )}
+                        ) : ( <div className="space-y-6">{messages.map((msg, index) => <MessageBubble key={index} msg={msg} isMarkedLoaded={isMarkedLoaded} />)}</div> )}
                     </main>
                     <footer className="bg-white/70 backdrop-blur-lg border-t border-gray-200 pt-3 pb-4 sm:pb-6 flex-shrink-0">
                         {error && <p className="max-w-3xl mx-auto text-red-500 text-center text-sm mb-2 px-4 sm:px-6">{error}</p>}
-                        <ChatInputForm value={inputValue} onChange={(e) => setInputValue(e.target.value)} onSubmit={handleSendMessage} isLoading={isLoading} hasApiKey={!!apiKey} />
+                        <FilePreview files={uploadedFiles} onRemoveFile={handleRemoveFile} />
+                        <ChatInputForm value={inputValue} onChange={(e) => setInputValue(e.target.value)} onSubmit={handleSendMessage} isLoading={isLoading} hasApiKey={true} onFileButtonClick={() => fileInputRef.current.click()} hasFiles={uploadedFiles.length > 0} />
                     </footer>
                 </div>
             );
@@ -404,4 +614,5 @@
     </script>
 </body>
 </html>
+        
 
