@@ -27,105 +27,54 @@
 	#root {
 		height: 100%;
 		overflow: hidden;
-		/* Mencegah scroll di level body */
 		overscroll-behavior: none;
-		/* Menghilangkan efek 'karet' di semua browser */
 	}
 
-	/* Styles untuk merender konten Markdown dari AI dengan rapi */
-	.ai-chat-content * {
-		margin: 0 !important;
-		padding: 0 !important;
-		line-height: 1.5;
-	}
-
-	.ai-chat-content p,
-	.ai-chat-content ul,
-	.ai-chat-content ol,
-	.ai-chat-content blockquote,
-	.ai-chat-content pre,
-	.ai-chat-content table {
-		margin-bottom: 0.6em !important;
-	}
-
-	.ai-chat-content ul,
-	.ai-chat-content ol {
-		padding-left: 1.5rem !important;
-	}
-
-	.ai-chat-content ul {
-		list-style: disc outside !important;
-	}
-
-	.ai-chat-content ol {
-		list-style: decimal outside !important;
-	}
-
-	.ai-chat-content li {
-		padding-left: 0.25rem !important;
-		margin-bottom: 0.25em !important;
-	}
-
-	.ai-chat-content > :last-child,
-	.ai-chat-content li:last-child {
-		margin-bottom: 0 !important;
-	}
-
-	.ai-chat-content table {
-		display: block;
-		max-width: 100%;
-		overflow-x: auto;
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	.ai-chat-content th,
-	.ai-chat-content td {
-		border: 1px solid #e2e8f0;
-		padding: 0.4rem 0.6rem !important;
-	}
-
+	.ai-chat-content * { margin: 0 !important; padding: 0 !important; line-height: 1.5; }
+	.ai-chat-content p, .ai-chat-content ul, .ai-chat-content ol, .ai-chat-content blockquote, .ai-chat-content pre, .ai-chat-content table { margin-bottom: 0.6em !important; }
+	.ai-chat-content ul, .ai-chat-content ol { padding-left: 1.5rem !important; }
+	.ai-chat-content ul { list-style: disc outside !important; }
+	.ai-chat-content ol { list-style: decimal outside !important; }
+	.ai-chat-content li { padding-left: 0.25rem !important; margin-bottom: 0.25em !important; }
+	.ai-chat-content > :last-child, .ai-chat-content li:last-child { margin-bottom: 0 !important; }
+	.ai-chat-content table { display: block; max-width: 100%; overflow-x: auto; width: 100%; border-collapse: collapse; }
+	.ai-chat-content th, .ai-chat-content td { border: 1px solid #e2e8f0; padding: 0.4rem 0.6rem !important; font-size: inherit; }
 	.ai-chat-content th {
-		background-color: #f7fafc;
-	}
-
-	.ai-chat-content code {
-		background-color: #edf2f7;
-		padding: 0.2em 0.4em !important;
-		font-size: 85%;
-		border-radius: 3px;
-	}
-
-	.ai-chat-content pre {
-		background-color: #2d3748;
-		color: #e2e8f0;
-		padding: 0.75rem !important;
-		border-radius: 0.5rem;
-		overflow-x: auto;
-	}
-
-	.ai-chat-content pre code {
-		background-color: transparent;
-		color: inherit;
-	}
-
-	.ai-chat-content a {
-		color: #4299e1;
-		text-decoration: underline;
-	}
-
-	.ai-chat-content blockquote {
-		border-left: 0.25em solid #e2e8f0;
-		padding-left: 1em !important;
-		color: #718096;
-	}
+        background-color: #f7fafc;
+        text-align: center;
+        font-weight: normal;
+    }
+	.ai-chat-content code { background-color: #edf2f7; padding: 0.2em 0.4em !important; font-size: 85%; border-radius: 3px; }
+	.ai-chat-content pre { background-color: #2d3748; color: #e2e8f0; padding: 0.75rem !important; border-radius: 0.5rem; overflow-x: auto; }
+	.ai-chat-content pre code { background-color: transparent; color: inherit; }
+	.ai-chat-content a { color: #4299e1; text-decoration: underline; }
+	.ai-chat-content blockquote { border-left: 0.25em solid #e2e8f0; padding-left: 1em !important; color: #718096; }
+	
+    /* Gaya untuk Modal Riwayat */
+    .history-item .history-item-title,
+    .history-item .history-item-edit,
+    .history-item .history-item-delete {
+        display: flex;
+    }
+    .history-item.is-editing .history-item-title,
+    .history-item.is-editing .history-item-edit,
+    .history-item .history-title-input,
+    .history-item .history-item-save {
+        display: none;
+    }
+    .history-item.is-editing .history-title-input,
+    .history-item.is-editing .history-item-save {
+        display: flex;
+    }
+    .history-item.confirming-delete .history-item-delete {
+        background-color: #fee2e2;
+        color: #ef4444;
+    }
 	</style>
 </head>
 <body class="bg-gray-50">
-	<!-- Di sinilah aplikasi React akan dimuat -->
 	<div id="root"></div>
 
-	<!-- Kode Aplikasi React kita, diterjemahkan oleh Babel -->
 	<script type="text/babel">
 		// --- Konstanta dan Konfigurasi ---
         const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/';
@@ -135,7 +84,7 @@
         };
         const IMAGE_COMMAND = '/gambar ';
 
-        // --- Komponen Anak (Child Components) ---
+        // --- Ikon SVG ---
         const AiIcon = () => (
             <svg className="w-full h-full" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                 <path d="M37.728,49.312v186.48C37.728,413.104,256,512,256,512s218.272-98.896,218.272-276.208V49.312 C474.272,49.312,396.128,0,256,0S37.728,49.312,37.728,49.312z"></path>
@@ -147,11 +96,15 @@
                 </g>
             </svg>
         );
+        const HistoryIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg> );
+        const NewChatIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /><path d="M8 12h8" /><path d="M12 8v8" /></svg> );
+        const EditIcon = (props) => ( <svg {...props} fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M10.681 18.207l-2.209 5.67 5.572-2.307-3.363-3.363zM26.855 6.097l-0.707-0.707c-0.78-0.781-2.047-0.781-2.828 0l-1.414 1.414 3.535 3.536 1.414-1.414c0.782-0.781 0.782-2.048 0-2.829zM10.793 17.918l0.506-0.506 3.535 3.535 9.9-9.9-3.535-3.535 0.707-0.708-11.113 11.114zM23.004 26.004l-17.026 0.006 0.003-17.026 11.921-0.004 1.868-1.98h-14.805c-0.552 0-1 0.447-1 1v19c0 0.553 0.448 1 1 1h19c0.553 0 1-0.447 1-1v-14.058l-2.015 1.977 0.054 11.085z"></path></svg> );
+        const SaveIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> );
+        const DeleteIcon = (props) => ( <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> );
 
+        // --- Komponen Anak (Child Components) ---
         const AiMessageContent = React.memo(({ part, isMarkedLoaded }) => {
-            if (part.type.startsWith('image/')) {
-                return <img src={part.content} alt="Generated Content" className="mt-2 rounded-lg max-w-full h-auto" />;
-            }
+            if (part.type.startsWith('image/')) { return <img src={part.content} alt="Generated Content" className="mt-2 rounded-lg max-w-full h-auto" />; }
             if (part.type === 'text') {
                 const htmlContent = isMarkedLoaded && window.marked ? window.marked.parse(part.content) : part.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 return <div className="ai-chat-content text-base break-words" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
@@ -162,61 +115,31 @@
         const MessageBubble = React.memo(({ msg, isMarkedLoaded }) => {
             const isUser = msg.role === 'user';
             const bubbleClasses = isUser ? 'bg-gray-100 text-blue-700 rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none';
-            const ModelAvatar = () => (
-                <div className="w-7 h-7 flex-shrink-0">
-                    <AiIcon />
-                </div>
-            );
-            
+            const ModelAvatar = () => ( <div className="w-6 h-6 flex-shrink-0"><AiIcon /></div> );
             return (
                 <div className={`flex items-start gap-2 sm:gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
                     {!isUser && <ModelAvatar />}
                     <div className={`${isUser ? 'max-w-[70%]' : 'max-w-full'} min-w-0 rounded-2xl p-3 sm:p-4 shadow-sm ${bubbleClasses}`}>
-                        {isUser ? (
-                             <p className="text-base whitespace-pre-wrap break-words">{msg.parts[0].content}</p>
-                        ) : (
-                            msg.parts.map((part, index) => <AiMessageContent key={index} part={part} isMarkedLoaded={isMarkedLoaded} />)
-                        )}
+                        {msg.parts.map((part, index) => isUser ? <p key={index} className="text-base whitespace-pre-wrap break-words">{part.content}</p> : <AiMessageContent key={index} part={part} isMarkedLoaded={isMarkedLoaded} />)}
                     </div>
                 </div>
             );
         });
 
         const ChatInputForm = React.memo(({ value, onChange, onSubmit, isLoading, hasApiKey }) => {
+            const isSendDisabled = isLoading || !value;
             return (
                 <form onSubmit={onSubmit} className="max-w-3xl mx-auto px-4 sm:px-6">
-                    <div className="flex items-center w-full h-14 bg-gray-200 rounded-full shadow-sm transition-all duration-200">
-                        
-                        {/* Upload Button */}
-                        <button
-                            type="button"
-                            className="w-14 h-14 text-gray-600 flex items-center justify-center focus:outline-none flex-shrink-0 transition-colors"
-                            aria-label="Tambah file"
-                        >
+                    <div className="flex items-center w-full h-14 bg-gray-100 rounded-full shadow-sm transition-all duration-200">
+                        <button type="button" className="w-14 h-14 text-gray-600 flex items-center justify-center focus:outline-none flex-shrink-0 transition-colors" aria-label="Tambah file">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
-                        
-                        {/* Text Input */}
-                        <input 
-                            type="text" 
-                            value={value} 
-                            onChange={onChange} 
-                            placeholder={hasApiKey ? "Ketik pesan..." : "Masukkan API Key Anda..."} 
-                            className="w-full h-full bg-transparent border-none focus:outline-none focus:ring-0 text-base placeholder-gray-500 pr-2" 
-                            disabled={isLoading} 
-                        />
-                        
-                        {/* Send Button */}
-                        <button 
-                            type="submit" 
-                            disabled={isLoading || !value} 
-                            className="m-1.5 w-11 h-11 bg-indigo-500 text-white rounded-full flex items-center justify-center transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0" 
-                            aria-label="Kirim pesan"
-                        >
+                        <input type="text" value={value} onChange={onChange} placeholder={hasApiKey ? "Ketik pesan..." : "Masukkan API Key Anda..."} className="w-full h-full bg-transparent border-none focus:outline-none focus:ring-0 text-base placeholder-gray-500 pr-2" disabled={isLoading} />
+                        <button type="submit" disabled={isSendDisabled} className="w-14 h-14 flex items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed flex-shrink-0" aria-label="Kirim pesan">
                             {isLoading ? (
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-label="Memuat"></div>
+                                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                             ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                                <svg className={`w-6 h-6 transition-colors ${!isSendDisabled ? 'text-indigo-500' : 'text-gray-400'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                             )}
                         </button>
                     </div>
@@ -224,177 +147,260 @@
             );
         });
 
-        // --- Logika API ---
-        async function fetchModelResponse(prompt, apiKey) {
-            const isImagePrompt = prompt.toLowerCase().startsWith(IMAGE_COMMAND);
-            const model = isImagePrompt ? MODELS.IMAGE : MODELS.CHAT;
-            const finalPrompt = isImagePrompt ? prompt.substring(IMAGE_COMMAND.length) : prompt;
-            const parts = [{ text: finalPrompt }];
+        const HistoryModal = React.memo(({ conversations, onLoad, onUpdateTitle, onDelete, onClose }) => {
+            const [editingId, setEditingId] = React.useState(null);
+            const [titleInput, setTitleInput] = React.useState('');
+            const [confirmDeleteId, setConfirmDeleteId] = React.useState(null);
+
+            const handleEdit = (convo) => {
+                setEditingId(convo.id);
+                setTitleInput(convo.title);
+                setConfirmDeleteId(null);
+            };
+
+            const handleSave = (id) => {
+                onUpdateTitle(id, titleInput);
+                setEditingId(null);
+            };
+
+            const handleDelete = (id) => {
+                if (confirmDeleteId === id) {
+                    onDelete(id);
+                    setConfirmDeleteId(null);
+                } else {
+                    setConfirmDeleteId(id);
+                    setEditingId(null);
+                }
+            };
             
-            const apiUrl = `${API_BASE_URL}${model}:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts }] };
-            
-            if (model === MODELS.IMAGE) {
-                payload.generationConfig = { responseModalities: ['TEXT', 'IMAGE'] };
-            } else {
-                payload.tools = [{ "google_search": {} }];
-            }
+            const handleModalClose = () => {
+                setEditingId(null);
+                setConfirmDeleteId(null);
+                onClose();
+            };
 
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            const displayableConversations = conversations.filter(c => c.messages.length > 0).reverse();
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error?.message || `Request gagal dengan status ${response.status}`);
-            }
-
-            const result = await response.json();
-            if (!result.candidates?.length) {
-                const reason = result.promptFeedback?.blockReason || "Konten diblokir atau tidak ada respons valid";
-                throw new Error(`Permintaan diblokir: ${reason}.`);
-            }
-
-            const responseParts = result.candidates[0].content?.parts;
-            if (!responseParts) {
-                throw new Error("Respons dari API tidak memiliki format konten yang valid.");
-            }
-            
-            return responseParts.map(part => {
-                if (part.text) return { type: 'text', content: part.text };
-                if (part.inlineData) return { type: part.inlineData.mimeType, content: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` };
-                return null;
-            }).filter(Boolean);
-        }
+            return (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center" onClick={handleModalClose}>
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md m-4" onClick={e => e.stopPropagation()}>
+                        <h2 className="text-base font-semibold text-center pt-4">Riwayat Percakapan</h2>
+                        <div className="border-b mx-4 mt-3"></div>
+                        <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+                            {displayableConversations.length > 0 && displayableConversations.map(convo => (
+                                <div key={convo.id} className={`flex items-stretch gap-2 h-12 history-item ${editingId === convo.id ? 'is-editing' : ''} ${confirmDeleteId === convo.id ? 'confirming-delete' : ''}`}>
+                                    <div className="flex-grow min-w-0 border rounded-md flex items-center px-4 cursor-pointer" onClick={() => editingId !== convo.id && onLoad(convo.id)}>
+                                        <span className="history-item-title block truncate w-full">{convo.title}</span>
+                                        <input type="text" value={editingId === convo.id ? titleInput : convo.title} onChange={(e) => setTitleInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSave(convo.id)} className="history-title-input w-full h-full bg-transparent focus:outline-none" />
+                                    </div>
+                                    <div className="flex-shrink-0 flex items-center gap-2">
+                                        <button onClick={() => handleEdit(convo)} className="history-item-edit w-12 h-12 border rounded-md flex items-center justify-center hover:bg-gray-50"><EditIcon className="w-6 h-6" /></button>
+                                        <button onClick={() => handleSave(convo.id)} className="history-item-save w-12 h-12 border rounded-md flex items-center justify-center text-green-600 hover:bg-gray-50"><SaveIcon className="w-6 h-6" /></button>
+                                        <button onClick={() => handleDelete(convo.id)} className="history-item-delete w-12 h-12 border rounded-md flex items-center justify-center transition-colors hover:bg-red-50"><DeleteIcon className="w-6 h-6" /></button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        });
 
         // --- Komponen Utama Aplikasi ---
         function App() {
+            // STATE
             const [apiKey, setApiKey] = React.useState('');
-            const [messages, setMessages] = React.useState([
-                { role: 'model', parts: [{ type: 'text', content: 'Selamat datang di Asisten AI. Untuk memulai, silakan masukkan API Key dari Google AI Studio Anda.' }] }
-            ]);
+            const [conversations, setConversations] = React.useState([]);
+            const [currentConversationId, setCurrentConversationId] = React.useState(null);
+            const [messages, setMessages] = React.useState([]);
             const [inputValue, setInputValue] = React.useState('');
             const [isLoading, setIsLoading] = React.useState(false);
             const [error, setError] = React.useState(null);
             const [isMarkedLoaded, setIsMarkedLoaded] = React.useState(false);
-
-            const chatContainerRef = React.useRef(null);
-
-            // --- Hooks ---
-            React.useEffect(() => {
-                chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' });
-            }, [messages]);
+            const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
             
+            const chatContainerRef = React.useRef(null);
+            
+            // COMPUTED
+            const currentConversation = conversations.find(c => c.id === currentConversationId);
+            const currentTitle = currentConversation ? currentConversation.title : '';
+            const hasActualHistory = conversations.some(c => c.messages.length > 0);
+
+            // --- EFFECTS ---
             React.useEffect(() => {
-                if (window.marked) setIsMarkedLoaded(true);
+                const savedConversations = localStorage.getItem('ai-conversations');
+                if (savedConversations) {
+                    const parsed = JSON.parse(savedConversations);
+                    if (parsed.length > 0) {
+                        setConversations(parsed);
+                        setCurrentConversationId(parsed[0].id);
+                    } else {
+                        handleNewChat();
+                    }
+                } else {
+                     handleNewChat();
+                }
             }, []);
 
             React.useEffect(() => {
-                let lastTouchEnd = 0;
-                const preventDoubleTap = (event) => {
-                    const now = Date.now();
-                    if (now - lastTouchEnd <= 300) event.preventDefault();
-                    lastTouchEnd = now;
-                };
-                document.addEventListener('touchend', preventDoubleTap, { passive: false });
+                localStorage.setItem('ai-conversations', JSON.stringify(conversations));
+            }, [conversations]);
 
-                const setupMobileViewportFix = () => {
-                    if (!window.visualViewport) return;
-                    let lastHeight = window.visualViewport.height;
-                    const handler = () => {
-                        const newHeight = window.visualViewport.height;
-                        if (newHeight > lastHeight) {
-                            setTimeout(() => {
-                                window.scrollTo(0, 0);
-                                chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' });
-                            }, 50);
-                        }
-                        lastHeight = newHeight;
-                    };
-                    window.visualViewport.addEventListener('resize', handler);
-                    return () => window.visualViewport.removeEventListener('resize', handler);
-                };
-                const cleanupViewportFix = setupMobileViewportFix();
-                
-                return () => {
-                    document.removeEventListener('touchend', preventDoubleTap);
-                    cleanupViewportFix();
-                };
-            }, []);
+            React.useEffect(() => {
+                const convo = conversations.find(c => c.id === currentConversationId);
+                setMessages(convo ? convo.messages : []);
+            }, [currentConversationId, conversations]);
 
-            // --- Handlers ---
+            React.useEffect(() => { chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' }); }, [messages]);
+            React.useEffect(() => { if (window.marked) setIsMarkedLoaded(true); }, []);
+
+            // --- HANDLERS ---
             const handleApiKeySubmit = (key) => {
                 if (key.startsWith('AIzaSy') && key.length > 35) {
                     setApiKey(key);
-                    setMessages([{ role: 'model', parts: [{ type: 'text', content: 'Terima kasih! API Key disimpan. Anda siap memulai.' }] }]);
                     setError(null);
                 } else {
                     setError('API Key tidak valid. Mohon periksa kembali.');
                 }
             };
+
+            const updateConversation = (id, updates) => {
+                setConversations(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+            };
+
+            const handleNewChat = () => {
+                const newId = Date.now();
+                const newConvo = { id: newId, title: '', messages: [] };
+                setConversations(prev => [newConvo, ...prev]);
+                setCurrentConversationId(newId);
+                setIsHistoryOpen(false);
+            };
+
+            const handleLoadConversation = (id) => {
+                setCurrentConversationId(id);
+                setIsHistoryOpen(false);
+            };
+
+            const handleUpdateTitle = (id, newTitle) => {
+                if(newTitle.trim()) {
+                    updateConversation(id, { title: newTitle.trim() });
+                }
+            };
+
+            const handleDeleteConversation = (id) => {
+                setConversations(prev => {
+                    const newConvos = prev.filter(c => c.id !== id);
+                    if (currentConversationId === id) {
+                        if (newConvos.length > 0) {
+                            setCurrentConversationId(newConvos[0].id);
+                        } else {
+                           // Handled by the effect below
+                        }
+                    }
+                    return newConvos;
+                });
+            };
             
+             React.useEffect(() => {
+                if (conversations.length === 0 && currentConversationId) {
+                    handleNewChat();
+                }
+            }, [conversations]);
+
             const handleSendMessage = async (e) => {
                 e.preventDefault();
                 const trimmedInput = inputValue.trim();
                 if (!trimmedInput) return;
 
-                if (!apiKey) {
-                    handleApiKeySubmit(trimmedInput);
-                    setInputValue('');
-                    return;
+                if (!apiKey) { 
+                    handleApiKeySubmit(trimmedInput); 
+                    if(trimmedInput.startsWith('AIzaSy') && trimmedInput.length > 35) {
+                       setInputValue('');
+                    }
+                    return; 
                 }
                 
-                const userMessageParts = [{type: 'text', content: trimmedInput}];
+                const userMessage = { role: 'user', parts: [{ type: 'text', content: trimmedInput }] };
+                const newMessages = [...messages, userMessage];
+                
+                const title = (messages.length === 0 && !currentTitle) ? trimmedInput.substring(0, 30) : currentTitle;
+                updateConversation(currentConversationId, { messages: newMessages, title });
 
                 setError(null);
                 setIsLoading(true);
-                setMessages(prev => [...prev, { role: 'user', parts: userMessageParts }]);
                 setInputValue('');
                 
                 try {
                     const modelParts = await fetchModelResponse(trimmedInput, apiKey);
-                    setMessages(prev => [...prev, { role: 'model', parts: modelParts }]);
+                    const modelMessage = { role: 'model', parts: modelParts };
+                    updateConversation(currentConversationId, { messages: [...newMessages, modelMessage] });
                 } catch (err) {
-                    console.error('API call failed:', err);
                     const errorMessage = `Maaf, terjadi kesalahan: ${err.message}`;
                     setError(errorMessage);
-                    setMessages(prev => [...prev, { role: 'model', parts: [{ type: 'text', content: errorMessage }] }]);
+                    const errorMsg = { role: 'model', parts: [{ type: 'text', content: errorMessage }] };
+                    updateConversation(currentConversationId, { messages: [...newMessages, errorMsg] });
                 } finally {
                     setIsLoading(false);
                 }
             };
+
+            // --- API LOGIC ---
+            async function fetchModelResponse(prompt, apiKey) {
+                const isImagePrompt = prompt.toLowerCase().startsWith(IMAGE_COMMAND);
+                const model = isImagePrompt ? MODELS.IMAGE : MODELS.CHAT;
+                const finalPrompt = isImagePrompt ? prompt.substring(IMAGE_COMMAND.length) : prompt;
+                const parts = [{ text: finalPrompt }];
+                const apiUrl = `${API_BASE_URL}${model}:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ parts }] };
+                if (model === MODELS.IMAGE) { payload.generationConfig = { responseModalities: ['TEXT', 'IMAGE'] }; } 
+                else { payload.tools = [{ "google_search": {} }]; }
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error?.message || `Request gagal`); }
+                const result = await response.json();
+                if (!result.candidates?.length) { throw new Error("Respons API tidak valid."); }
+                const responseParts = result.candidates[0].content?.parts;
+                if (!responseParts) { throw new Error("Format konten tidak valid."); }
+                return responseParts.map(part => {
+                    if (part.text) return { type: 'text', content: part.text };
+                    if (part.inlineData) return { type: part.inlineData.mimeType, content: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` };
+                    return null;
+                }).filter(Boolean);
+            }
             
             return (
                 <div className="h-full w-full bg-gray-50 font-sans flex flex-col antialiased">
+                    {isHistoryOpen && <HistoryModal conversations={conversations} onLoad={handleLoadConversation} onUpdateTitle={handleUpdateTitle} onDelete={handleDeleteConversation} onClose={() => setIsHistoryOpen(false)} /> }
                     <header className="bg-white/70 backdrop-blur-lg border-b border-gray-200 p-4 shadow-sm z-10 flex-shrink-0">
-                        <h1 className="text-lg sm:text-xl font-bold text-gray-800 text-center">AI Personal Assistant</h1>
+                        <div className="max-w-3xl mx-auto flex items-center justify-between">
+                             <button onClick={() => setIsHistoryOpen(true)} disabled={!hasActualHistory} className={`text-gray-600 ${hasActualHistory ? 'hover:text-gray-900' : 'opacity-50 cursor-not-allowed'}`}><HistoryIcon/></button>
+                             <h1 className="text-base font-semibold text-gray-800 text-center truncate mx-4">{currentTitle}</h1>
+                             <button onClick={handleNewChat} className="text-gray-600 hover:text-gray-900"><NewChatIcon/></button>
+                        </div>
                     </header>
-                    
-                    <main ref={chatContainerRef} className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
-                        {messages.map((msg, index) => <MessageBubble key={index} msg={msg} isMarkedLoaded={isMarkedLoaded} />)}
+                    <main ref={chatContainerRef} className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto p-4 sm:p-6">
+                        {messages.length === 0 ? (
+                            <div className="flex h-full items-center justify-center">
+                                <p className="text-gray-500 text-center">
+                                    { !apiKey ? "Masukkan API Key Anda untuk memulai." : "Projek ini masih dalam Pengambangan" }
+                                </p>
+                            </div>
+                        ) : (
+                             <div className="space-y-6">
+                                {messages.map((msg, index) => <MessageBubble key={index} msg={msg} isMarkedLoaded={isMarkedLoaded} />)}
+                            </div>
+                        )}
                     </main>
-
                     <footer className="bg-white/70 backdrop-blur-lg border-t border-gray-200 pt-3 pb-4 sm:pb-6 flex-shrink-0">
                         {error && <p className="max-w-3xl mx-auto text-red-500 text-center text-sm mb-2 px-4 sm:px-6">{error}</p>}
-                        <ChatInputForm 
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onSubmit={handleSendMessage}
-                            isLoading={isLoading}
-                            hasApiKey={!!apiKey}
-                        />
+                        <ChatInputForm value={inputValue} onChange={(e) => setInputValue(e.target.value)} onSubmit={handleSendMessage} isLoading={isLoading} hasApiKey={!!apiKey} />
                     </footer>
                 </div>
             );
         }
 
-        // Memuat aplikasi React ke dalam DOM
         const container = document.getElementById('root');
         const root = ReactDOM.createRoot(container);
         root.render(<App />);
-
     </script>
 </body>
 </html>
