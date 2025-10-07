@@ -167,12 +167,9 @@ async function fetchModelResponse(prompt, files, apiKey) {
     if (files.length > 0) {
         model = MODELS.CHAT; // Gunakan model multimodal jika ada file
         
-        // PERBAIKAN: Buat promp yang lebih eksplisit jika ada file
         if (prompt) {
-            // Jika pengguna memberikan teks, gabungkan dengan instruksi
             finalPrompt = `Berdasarkan file terlampir, ${prompt}`;
         } else {
-            // Jika hanya file yang dikirim, minta AI untuk merangkumnya
             finalPrompt = "Tolong rangkum atau jelaskan isi dari file yang terlampir ini.";
         }
         parts.push({ text: finalPrompt });
@@ -194,7 +191,7 @@ async function fetchModelResponse(prompt, files, apiKey) {
     if (model === MODELS.IMAGE) {
         payload.generationConfig = { responseModalities: ['TEXT', 'IMAGE'] };
     } else if (model === MODELS.CHAT && files.length === 0) {
-        payload.tools = [{ "google_search": {} }]; // Gunakan Google Search hanya untuk chat teks
+        payload.tools = [{ "google_search": {} }];
     }
 
     const response = await fetch(apiUrl, {
@@ -255,14 +252,53 @@ export default function App() {
         return () => { document.body.removeChild(script); };
     }, []);
 
+    // INTEGRASI KODE DARI FILE HTML UNTUK PWA & IOS
     useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
+        // Mencegah overscroll/efek karet di iOS
+        document.documentElement.style.overscrollBehavior = 'none';
+        document.body.style.overscrollBehavior = 'none';
+        
+        // Mencegah double tap untuk zoom
+        let lastTouchEnd = 0;
+        const preventDoubleTap = (event) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        };
+        document.addEventListener('touchend', preventDoubleTap, { passive: false });
+
+        // Penanganan keyboard di iOS
+        const setupMobileViewportFix = () => {
+            if (!window.visualViewport) return;
+            let lastHeight = window.visualViewport.height;
+            const handler = () => {
+                const newHeight = window.visualViewport.height;
+                if (newHeight > lastHeight) { // Keyboard ditutup
+                    setTimeout(() => {
+                        window.scrollTo(0, 0);
+                        chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' });
+                        if (document.activeElement?.tagName === 'INPUT') {
+                            document.activeElement.focus();
+                        }
+                    }, 50);
+                }
+                lastHeight = newHeight;
+            };
+            window.visualViewport.addEventListener('resize', handler);
+            return () => window.visualViewport.removeEventListener('resize', handler);
+        };
+        const cleanupViewportFix = setupMobileViewportFix();
+        
         return () => {
-            document.body.style.overflow = '';
-            document.body.style.position = '';
+            document.documentElement.style.overscrollBehavior = '';
+            document.body.style.overscrollBehavior = '';
+            document.removeEventListener('touchend', preventDoubleTap);
+            cleanupViewportFix();
         };
     }, []);
+
 
     // --- Handlers ---
     const handleApiKeySubmit = (key) => {
